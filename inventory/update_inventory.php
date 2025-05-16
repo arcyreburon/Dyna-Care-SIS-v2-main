@@ -18,7 +18,7 @@ $productId = isset($_GET['id']) ? $_GET['id'] : null;
 
 // Initialize all possible fields
 $productName = $availStock = $damageStock = $expirationDate = $categoryId = $batch = $oldPrice = $brand = $dosage = $received = "";
-$strength = $generic_name = $supply_type = $size = $model_number = $warranty = "";
+$strength = $genericName = $supply_type = $size = $model_number = $warranty = "";
 $categories = [];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && $productId) {
@@ -38,7 +38,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $productId) {
     $batch = $_POST['batch'] ?? null;
     $dosage = $_POST['dosage'] ?? null;
     $strength = $_POST['strength'] ?? null;
-    $generic_name = $_POST['generic_name'] ?? null;
+    $genericName = $_POST['generic_name'] ?? null;
     
     // Supply-specific fields
     $supply_type = $_POST['supply_type'] ?? null;
@@ -67,7 +67,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $productId) {
                 $availStock, $price, $delivery, $damageStock, 
                 $productName, $expirationDate, $categoryId, 
                 $batch, $oldPrice, $brand, $dosage, $received,
-                $strength, $generic_name, $supply_type, $size,
+                $strength, $genericName, $supply_type, $size,
                 $model_number, $warranty,
                 $productId, $branchId
             );
@@ -76,7 +76,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $productId) {
                 $availStock, $price, $delivery, $damageStock, 
                 $productName, $expirationDate, $categoryId, 
                 $batch, $oldPrice, $brand, $dosage, $received,
-                $strength, $generic_name, $supply_type, $size,
+                $strength, $genericName, $supply_type, $size,
                 $model_number, $warranty,
                 $productId
             );
@@ -140,7 +140,7 @@ if ($productId) {
             $dosage = $row['dosage'];
             $received = $row['received'];
             $strength = $row['strength'];
-            $generic_name = $row['generic_name'];
+            $genericName = $row['generic_name'];
             $supply_type = $row['supply_type'];
             $size = $row['size'];
             $model_number = $row['model_number'];
@@ -224,6 +224,10 @@ include '../includes/footer.php';
                                     <label for="productName" class="form-label">Product Name <span class="text-danger">*</span></label>
                                     <input type="text" class="form-control" id="productName" name="product_name" value="<?= htmlspecialchars($productName) ?>" required>
                                 </div>
+                                <div class="mb-3 col-md-6 medicine-field">
+                                    <label for="genericName" class="form-label">Generic Name </label> <span class="text-danger">*</span>
+                                    <input type="text" class="form-control" id="genericName" name="generic_name" value="<?= htmlspecialchars($genericName) ?>" required>
+                                </div>
                                 <div class="col-md-6">
                                     <label for="category" class="form-label">Category <span class="text-danger">*</span></label>
                                     <select class="form-select" id="category" name="category_id" required onchange="toggleFieldsByCategory()">
@@ -272,9 +276,9 @@ include '../includes/footer.php';
 
                                 <!-- Medicine-specific Fields -->
                                 <div class="mb-3 col-md-6 medicine-field">
-                                <label for="dosage_form_id" class="form-label">Dosage Form</label>
+                                <label for="dosage_form_id" class="form-label">Preperation</label>
                                         <select class="form-control" id="dosage_form_id" name="dosage_form_id">
-                                            <option value="">Select Dosage Form</option>
+                                            <option value="">Select Preperation</option>
                                             <?php
                                             $dosage_sql = "SELECT * FROM dosage_forms";
                                             $dosage_result = $con->query($dosage_sql);
@@ -287,13 +291,8 @@ include '../includes/footer.php';
                                 </div>
 
                                 <div class="mb-3 col-md-6 medicine-field">
-                                    <label for="strength" class="form-label">Strength</label>
+                                    <label for="strength" class="form-label">Dosage</label>
                                     <input type="text" class="form-control" id="strength" name="strength" value="<?= $strength ?? '' ?>" placeholder="e.g., 500mg, 10mg/mL">
-                                </div>
-
-                                <div class="mb-3 col-md-6 medicine-field">
-                                    <label for="generic_name" class="form-label">Generic Name</label>
-                                    <input type="text" class="form-control" id="generic_name" name="generic_name" value="<?= $generic_name ?? '' ?>">
                                 </div>
 
                                 <!-- Supply-specific Fields -->
@@ -332,6 +331,7 @@ include '../includes/footer.php';
 
                                 <div class="mb-3 col-md-6 medicine-field">
                                     <label for="batch" class="form-label">Batch No. / Lot No.</label>
+                                    <span class="text-danger">*</span>
                                     <input type="text" class="form-control" id="batch" name="batch" value="<?= $batch ?>" required>
                                 </div>
 

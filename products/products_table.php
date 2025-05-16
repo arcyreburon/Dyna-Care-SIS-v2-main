@@ -114,9 +114,11 @@ include '../includes/footer.php';
                                         <tr>
                                             <th class="text-center">Branch</th>
                                             <th class="text-center">Item</th>
+                                            <th class="text-center">Generic</th>
+                                            <th class="text-center">Preparation</th>
                                             <th class="text-center">Category</th>
                                             <th class="text-center">Price</th>
-                                            <th class="text-center">Available Stock</th>
+                                            <th class="text-center">Stock</th>
                                             <th class="text-center">Vatable</th>
                                             <th class="text-center">Action</th>
                                         </tr>
@@ -132,7 +134,7 @@ include '../includes/footer.php';
     $branch_id = $_SESSION['branches_id'];
 
     // Modified SQL query with branch join and filters
-    $sql = "SELECT p.id, p.product_name, p.price, c.category_name, b.branch_name, i.avail_stock, p.vatable
+    $sql = "SELECT p.id, p.product_name, i.generic_name, p.price, c.category_name, b.branch_name, i.avail_stock, p.vatable
             FROM products p
             INNER JOIN categories c ON p.categories_id = c.id
             INNER JOIN inventory i ON p.id = i.products_id
@@ -151,6 +153,7 @@ include '../includes/footer.php';
             echo "<tr>
                 <td class='text-center'>" . htmlspecialchars($row['branch_name']) . "</td>
                 <td class='text-center'>" . htmlspecialchars($row['product_name']) . "</td>
+                <td class='text-center'>" . htmlspecialchars($row['generic_name']) . "</td>
                 <td class='text-center'>" . htmlspecialchars($row['category_name']) . "</td>
                 <td class='text-center'>₱" . number_format($row['price'], 2) . "</td>
                 <td class='text-center'>" . htmlspecialchars($row['avail_stock']) . "</td>

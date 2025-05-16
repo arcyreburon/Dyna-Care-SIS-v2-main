@@ -233,6 +233,13 @@
                                 <div class="col-sm-8">
                                     <span class="form-control-plaintext fw-bold text-primary" id="transaction-id-display"></span>
                                     <input type="hidden" id="hidden-transaction-id" name="transaction_no">
+                                    
+                                    <div style="text-align: left;">
+                                        <small><b>Date:</b> <?php echo date('m/d/Y'); ?></small>
+                                        <br>
+                                        <small><b>Time:</b> <?php echo date('h:i A'); ?></small>
+                                    </div>
+
                                 </div>
                             </div>
                             

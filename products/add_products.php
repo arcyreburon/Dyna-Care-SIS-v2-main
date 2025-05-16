@@ -85,9 +85,9 @@ include '../includes/footer.php';
                                         </select>
                                     </div>
                                     <div class="col-md-6 mb-3">
-                                        <label for="dosage_form_id" class="form-label">Dosage Form</label>
+                                        <label for="dosage_form_id" class="form-label">Preperation</label>
                                         <select class="form-control" id="dosage_form_id" name="dosage_form_id">
-                                            <option value="">Select Dosage Form</option>
+                                            <option value="">Select Preperation</option>
                                             <?php
                                             $dosage_sql = "SELECT * FROM dosage_forms";
                                             $dosage_result = $con->query($dosage_sql);
@@ -99,7 +99,7 @@ include '../includes/footer.php';
                                         </select>
                                     </div>
                                     <div class="col-md-6 mb-3">
-                                        <label for="strength" class="form-label">Strength</label>
+                                        <label for="strength" class="form-label">Dosage</label>
                                         <input type="text" class="form-control" id="strength" name="strength">
                                     </div>
                                     <div class="col-md-6 mb-3">
