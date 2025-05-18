@@ -41,25 +41,6 @@
             overflow-y: auto;
         }
         
-        .custom-table {
-            border-collapse: separate;
-            border-spacing: 0;
-            width: 100%;
-        }
-        
-        .custom-table thead th {
-            position: sticky;
-            top: 0;
-            background-color: var(--primary);
-            color: white;
-            font-weight: 500;
-            border: none;
-        }
-        
-        .custom-table tbody tr:hover {
-            background-color: rgba(67, 97, 238, 0.05);
-        }
-        
         .btn {
             border-radius: 6px;
             font-weight: 500;
@@ -113,6 +94,40 @@
             border-radius: 8px;
             margin-bottom: 20px;
         }
+
+        #orderTable {
+            --bs-table-bg: transparent;
+            --bs-table-striped-bg: rgba(0,0,0,0.02);
+            --bs-table-hover-bg: rgba(0,0,0,0.04);
+            border-collapse: separate;
+            border-spacing: 0;
+            font-size: 0.95rem;
+        }
+        #orderTable th {
+            font-weight: 500;
+            background-color: #f8f9fa;
+            border-bottom: 2px solid #dee2e6;
+            padding: 0.75rem 1rem;
+            white-space: nowrap;
+            text-align: center;
+        }
+        #orderTable td {
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid #dee2e6;
+            vertical-align: middle;
+            text-align: center;
+        }
+        #orderTable tr:last-child td {
+            border-bottom: none;
+        }
+        @media (max-width: 768px) {
+            #orderTable {
+                font-size: 0.85rem;
+            }
+            #orderTable th, #orderTable td {
+                padding: 0.5rem;
+            }
+        }
     </style>
 </head>
 <body>
@@ -160,16 +175,26 @@
                         </a>
                     </div>
                     <div class="card-body">
-                        <div class="d-flex justify-content-end mb-2">
-                            <a href="../cashier/reorder_form.php" class="btn btn-warning">
-                                <i class="bi bi-exclamation-circle"></i> Re-Order Low Stock
-                            </a>
-                        </div>
+                    <div class="d-flex justify-content-end mb-2">
+        <a href="../cashier/reorder_form.php" class="btn btn-warning">
+            <i class="bi bi-exclamation-circle"></i> Re-Order Low Stock
+        </a>
+    </div>
+    <!-- Add this search input -->
+    <div class="input-group mb-3">
+        <span class="input-group-text"><i class="bi bi-search"></i></span>
+        <input type="text" id="product-search" class="form-control" placeholder="Search products...">
+    </div>
+
+        <div id="no-products-message" class="alert alert-info d-none text-center">
+        <i class="bi bi-exclamation-circle"></i> No products found matching your search.
+    </div>
                         <div class="table-responsive">
                             <table id="products-table" class="custom-table table">
                                 <thead>
                                     <tr>
                                         <th>Product</th>
+                                        <th>Brand</th>
                                         <th>Category</th>
                                         <th>Stock</th>
                                         <th>Price</th>
@@ -178,7 +203,7 @@
                                 </thead>
                                 <tbody>
                                     <?php
-                                    $sql = "SELECT p.id, p.product_name, i.price, c.category_name, i.avail_stock, p.vatable, i.critical_level
+                                    $sql = "SELECT p.id, p.product_name, i.price, c.category_name, i.avail_stock, p.vatable, i.critical_level, i.generic_name
                                             FROM products p
                                             INNER JOIN categories c ON p.categories_id = c.id
                                             INNER JOIN inventory i ON p.id = i.products_id
@@ -196,13 +221,14 @@
                                         $isLowStock = ($row["avail_stock"] <= $row["critical_level"]);
                                         
                                         echo "<tr data-id='{$row["id"]}' data-name='{$row["product_name"]}' 
-                                              data-category='{$row["category_name"]}' data-stock='{$row["avail_stock"]}' 
+                                              data-category='{$row["category_name"]}' data_generic_name='{$row["generic_name"]}' data-stock='{$row["avail_stock"]}' 
                                               data-price='{$row["price"]}' data-vatable='{$row["vatable"]}'>";
                                         echo "<td>{$row["product_name"]}";
                                         if ($isLowStock) {
                                             echo " <span class='badge bg-danger ms-2'>Low Stock!</span>";
                                         }
                                         echo "</td>";
+                                        echo "<td>{$row["generic_name"]}</td>";
                                         echo "<td>{$row["category_name"]}</td>";
                                         echo "<td><span class='badge $stockClass'>{$row["avail_stock"]}</span></td>";
                                         echo "<td>₱" . number_format($row["price"], 2) . "</td>";
@@ -235,6 +261,9 @@
                                     <input type="hidden" id="hidden-transaction-id" name="transaction_no">
                                     
                                     <div style="text-align: left;">
+                                        <?php
+                                            date_default_timezone_set('Asia/Manila');
+                                        ?>
                                         <small><b>Date:</b> <?php echo date('m/d/Y'); ?></small>
                                         <br>
                                         <small><b>Time:</b> <?php echo date('h:i A'); ?></small>
@@ -244,28 +273,18 @@
                             </div>
                             
                             <div class="table-responsive mb-3">
-                                <table class="custom-table table">
+                                <table id="orderTable" class="table table-hover">
                                     <thead>
                                         <tr>
-                                            <th>Item</th>
-                                            <th>Qty</th>
-                                            <th>Price</th>
-                                            <th>Total</th>
-                                            <th>Action</th>
+                                            <th class="text-center">Item</th>
+                                            <th class="text-center">Qty</th>
+                                            <th class="text-center">Price</th>
+                                            <th class="text-center">Total</th>
+                                            <th class="text-center">Action</th>
                                         </tr>
                                     </thead>
                                     <tbody id="cart-items">
-                                    <tr>
-                                            <td>Product Name</td>
-                                            <td>
-                                                <input type="number" class="quantity" value="1" min="1">
-                                            </td>
-                                            <td>₱100.00</td>
-                                            <td>₱100.00</td>
-                                            <td>
-                                                <button class="btn btn-sm btn-danger remove-item">Remove</button>
-                                            </td>
-                                        </tr>
+                                        <!-- Cart items will be dynamically inserted here -->
                                     </tbody>
                                 </table>
                             </div>
@@ -458,96 +477,444 @@
     </main>
 
     <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Print Receipt Button Click Handler
-        document.getElementById('print-receipt').addEventListener('click', function() {
-            // Get all cart items
-            const cartItems = document.querySelectorAll('#cart-items tr');
-            const receiptItems = document.getElementById('receipt-items');
+// Make cartItems global so all scripts can access it
+let cartItems = [];
+</script>
+
+<script>
+// Product search functionality
+document.getElementById('product-search').addEventListener('input', function() {
+    const searchTerm = this.value.toLowerCase();
+    const rows = document.querySelectorAll('#products-table tbody tr');
+    let visibleCount = 0;
+    
+    rows.forEach(row => {
+        const productName = row.dataset.name.toLowerCase();
+        const category = row.dataset.category.toLowerCase();
+        const stock = row.dataset.stock;
+        const price = row.dataset.price;
+        
+        if (productName.includes(searchTerm) || 
+            category.includes(searchTerm) || 
+            stock.includes(searchTerm) || 
+            price.includes(searchTerm)) {
+            row.style.display = '';
+            visibleCount++;
+        } else {
+            row.style.display = 'none';
+        }
+    });
+    
+    // Show/hide no products message
+    const noProductsMsg = document.getElementById('no-products-message');
+    if (visibleCount === 0 && searchTerm.length > 0) {
+        noProductsMsg.classList.remove('d-none');
+    } else {
+        noProductsMsg.classList.add('d-none');
+    }
+});
+</script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const vatRate = 0.12;
+    const discountElement = document.getElementById('discount');
+    const cashTenderedElement = document.getElementById('cashTendered');
+    const processOrderButton = document.getElementById('process-order');
+    const printReceiptButton = document.getElementById('print-receipt');
+    const insufficientBalanceSpan = document.getElementById('insufficient-balance');
+    const transactionIdDisplay = document.getElementById('transaction-id-display');
+    const transactionIdInput = document.getElementById('hidden-transaction-id');
+    const subtotalElement = document.getElementById('subtotal');
+    const discountAmountElement = document.getElementById('discount-amount');
+    const vatAmountElement = document.getElementById('vat-amount');
+    const grandTotalElement = document.getElementById('grand-total');
+    const changeElement = document.getElementById('change');
+    
+    // Generate random transaction number
+    function generateTransactionNumber() {
+        const now = new Date();
+        const datePart = now.getFullYear().toString().substr(-2) + 
+                       (now.getMonth() + 1).toString().padStart(2, '0') + 
+                       now.getDate().toString().padStart(2, '0');
+        const randomPart = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
+        return `TRX-${datePart}-${randomPart}`;
+    }
+    
+    // Calculate all financial values
+    function calculateFinancials() {
+        // Subtotal for all items
+        const subtotal = cartItems.reduce((total, item) => total + (item.quantity * item.unitPrice), 0);
+        const discountPercent = parseFloat(discountElement.value);
+        const discountAmount = subtotal * (discountPercent / 100);
+        const discountedSubtotal = subtotal - discountAmount;
+        // Calculate VAT only for vatable items
+        const vatableSubtotal = cartItems.filter(item => item.vatable === 'Yes').reduce((total, item) => total + (item.quantity * item.unitPrice), 0);
+        const discountedVatableSubtotal = vatableSubtotal - (vatableSubtotal * (discountPercent / 100));
+        const vatAmount = discountedVatableSubtotal * vatRate;
+        const grandTotal = discountedSubtotal + vatAmount;
+        const cashTendered = parseFloat(cashTenderedElement.value) || 0;
+        const change = cashTendered - grandTotal;
+        
+        return {
+            subtotal,
+            discountAmount,
+            vatAmount,
+            grandTotal,
+            change,
+            isPaymentValid: cashTendered >= grandTotal && cashTendered > 0
+        };
+    }
+    
+    // Update all financial displays
+    function updateFinancialDisplay() {
+        const { subtotal, discountAmount, vatAmount, grandTotal, change, isPaymentValid } = calculateFinancials();
+        
+        subtotalElement.textContent = subtotal.toFixed(2);
+        discountAmountElement.textContent = discountAmount.toFixed(2);
+        vatAmountElement.textContent = vatAmount.toFixed(2);
+        grandTotalElement.textContent = grandTotal.toFixed(2);
+        changeElement.value = Math.max(0, change).toFixed(2);
+        
+        insufficientBalanceSpan.classList.toggle('d-none', isPaymentValid);
+        processOrderButton.disabled = cartItems.length === 0 || !isPaymentValid;
+        printReceiptButton.disabled = cartItems.length === 0;
+    }
+    
+    // Update cart items display
+    function updateCartItems() {
+        const cartItemsContainer = document.getElementById('cart-items');
+        cartItemsContainer.innerHTML = '';
+        
+        if (cartItems.length === 0) {
+            cartItemsContainer.innerHTML = `
+                <tr>
+                    <td colspan="5" class="text-center py-4 text-muted">
+                        <i class="bi bi-cart-x fs-1"></i>
+                        <p class="mt-2">No items in cart</p>
+                    </td>
+                </tr>
+            `;
+            return;
+        }
+        
+        cartItems.forEach((item, index) => {
+            const row = document.createElement('tr');
+            row.dataset.id = item.id;
+            row.innerHTML = `
+                <td>${item.name}</td>
+                <td>
+                    <div class="d-flex quantity-control">
+                        <button class="btn btn-outline-secondary" type="button" onclick="decreaseQuantity(${index})">
+                            <i class="bi bi-dash"></i>
+                        </button>
+                        <input type="number" value="${item.quantity}" min="1" max="${item.maxQuantity}" 
+                               class="form-control text-center mx-1" 
+                               onchange="updateQuantity(${index}, this.value)" 
+                               style="padding-right: 0.5rem; width: 60px;">
+                        <button class="btn btn-outline-secondary" type="button" onclick="increaseQuantity(${index})">
+                            <i class="bi bi-plus"></i>
+                        </button>
+                    </div>
+                </td>
+                <td>₱${item.unitPrice.toFixed(2)}</td>
+                <td>₱${(item.quantity * item.unitPrice).toFixed(2)}</td>
+                <td>
+                    <button class="btn btn-sm btn-outline-danger" onclick="removeItem(${index})">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </td>
+            `;
+            cartItemsContainer.appendChild(row);
+        });
+        
+        updateFinancialDisplay();
+    }
+    
+    // Add to cart functionality
+    document.querySelectorAll('.add-to-cart').forEach(button => {
+        button.addEventListener('click', function() {
+            const row = this.closest('tr');
+            const id = row.dataset.id;
+            const name = row.dataset.name;
+            const stock = parseInt(row.dataset.stock);
+            const price = parseFloat(row.dataset.price);
+            const vatable = row.dataset.vatable === 'Yes';
             
-            // Clear previous items
-            receiptItems.innerHTML = '';
+            const existingItem = cartItems.find(item => item.id === id);
             
-            // Only proceed if there are items in cart
-            if (cartItems.length > 0 && !cartItems[0].querySelector('td').colSpan) {
-                // Populate receipt items
-                cartItems.forEach(item => {
-                    const name = item.querySelector('td:nth-child(1)').textContent;
-                    const qty = item.querySelector('input.quantity').value;
-                    const price = item.querySelector('td:nth-child(3)').textContent.replace('₱', '');
-                    const total = item.querySelector('td:nth-child(4)').textContent.replace('₱', '');
-                    
-                    const row = document.createElement('tr');
-                    row.innerHTML = `
-                        <td>${name}</td>
-                        <td class="text-end">${qty}</td>
-                        <td class="text-end">₱${parseFloat(price).toFixed(2)}</td>
-                        <td class="text-end">₱${parseFloat(total).toFixed(2)}</td>
-                    `;
-                    receiptItems.appendChild(row);
-                });
+            if (existingItem) {
+                if (existingItem.quantity < stock) {
+                    existingItem.quantity += 1;
+                } else {
+                    alert('Not enough stock available.');
+                    return;
+                }
+            } else {
+                if (stock > 0) {
+                    cartItems.push({
+                        id, 
+                        name, 
+                        quantity: 1, 
+                        unitPrice: price,
+                        maxQuantity: stock,
+                        vatable
+                    });
+                } else {
+                    alert('This product is out of stock.');
+                    return;
+                }
             }
             
-            // Update receipt totals
-            document.getElementById('receipt-transaction-no').textContent = 
-                document.getElementById('transaction-id-display').textContent;
-            document.getElementById('receipt-subtotal').textContent = 
-                document.getElementById('subtotal').textContent;
-            document.getElementById('receipt-discount').textContent = 
-                document.getElementById('discount-amount').textContent;
-            document.getElementById('receipt-vat').textContent = 
-                document.getElementById('vat-amount').textContent;
-            document.getElementById('receipt-total').textContent = 
-                document.getElementById('grand-total').textContent;
-            document.getElementById('receipt-cash').textContent = 
-                document.getElementById('cashTendered').value || '0.00';
-            document.getElementById('receipt-change').textContent = 
-                document.getElementById('change').value || '0.00';
+            // Update stock display
+            const newStock = stock - 1;
+            row.dataset.stock = newStock;
+            const badge = row.querySelector('td:nth-child(4) .badge'); // Fixed: was 3, should be 4
+            badge.textContent = newStock;
             
-            // Show receipt modal
-            new bootstrap.Modal(document.getElementById('receiptModal')).show();
-        });
-
-        // Print Button in Modal Click Handler
-        document.getElementById('print-receipt-btn').addEventListener('click', function() {
-            // Create a print-friendly version
-            const printContent = `
-                <!DOCTYPE html>
-                <html>
-                <head>
-                    <title>Receipt</title>
-                    <style>
-                        body { font-family: Arial, sans-serif; font-size: 12px; padding: 10px; }
-                        .receipt { width: 100%; max-width: 300px; margin: 0 auto; }
-                        .text-center { text-align: center; }
-                        .text-end { text-align: right; }
-                        table { width: 100%; border-collapse: collapse; margin: 5px 0; }
-                        th, td { padding: 3px 0; }
-                        hr { border-top: 1px dashed #000; margin: 5px 0; }
-                        .fw-bold { font-weight: bold; }
-                    </style>
-                </head>
-                <body>
-                    ${document.getElementById('receipt-content').innerHTML}
-                    <script>
-                        window.onload = function() {
-                            window.print();
-                            setTimeout(function() {
-                                window.close();
-                            }, 100);
-                        };
-                    <\/script>
-                </body>
-                </html>
-            `;
+            if (newStock === 0) {
+                badge.classList.remove('badge-success', 'badge-warning');
+                badge.classList.add('badge-danger');
+                this.disabled = true;
+            } else if (newStock < 10) {
+                badge.classList.remove('badge-success', 'badge-danger');
+                badge.classList.add('badge-warning');
+            }
             
-            const printWindow = window.open('', '_blank', 'width=600,height=600');
-            printWindow.document.open();
-            printWindow.document.write(printContent);
-            printWindow.document.close();
+            updateCartItems();
         });
     });
-    </script>
+    
+    // Quantity adjustment functions
+    window.increaseQuantity = function(index) {
+        const item = cartItems[index];
+        if (item.quantity < item.maxQuantity) {
+            item.quantity += 1;
+            
+            // Update stock display
+            const productRow = document.querySelector(`#products-table tr[data-id="${item.id}"]`);
+            const newStock = parseInt(productRow.dataset.stock) - 1;
+            productRow.dataset.stock = newStock;
+            const badge = productRow.querySelector('td:nth-child(4) .badge'); // Fixed: was 3, should be 4
+            badge.textContent = newStock;
+            
+            if (newStock === 0) {
+                badge.classList.remove('badge-success', 'badge-warning');
+                badge.classList.add('badge-danger');
+                productRow.querySelector('.add-to-cart').disabled = true;
+            } else if (newStock < 10) {
+                badge.classList.remove('badge-success', 'badge-danger');
+                badge.classList.add('badge-warning');
+            }
+            
+            updateCartItems();
+        } else {
+            alert('Cannot exceed available stock');
+        }
+    };
+    
+    window.decreaseQuantity = function(index) {
+        const item = cartItems[index];
+        if (item.quantity > 1) {
+            item.quantity -= 1;
+            
+            // Update stock display
+            const productRow = document.querySelector(`#products-table tr[data-id="${item.id}"]`);
+            const newStock = parseInt(productRow.dataset.stock) + 1;
+            productRow.dataset.stock = newStock;
+            const badge = productRow.querySelector('td:nth-child(4) .badge'); // Fixed: was 3, should be 4
+            badge.textContent = newStock;
+            
+            if (newStock > 0) {
+                badge.classList.remove('badge-danger');
+                if (newStock < 10) {
+                    badge.classList.add('badge-warning');
+                } else {
+                    badge.classList.add('badge-success');
+                }
+                productRow.querySelector('.add-to-cart').disabled = false;
+            }
+            
+            updateCartItems();
+        }
+    };
+    
+    window.updateQuantity = function(index, quantity) {
+        const newQuantity = parseInt(quantity);
+        if (isNaN(newQuantity)) return;
+        
+        const item = cartItems[index];
+        const productRow = document.querySelector(`#products-table tr[data-id="${item.id}"]`);
+        const currentStock = parseInt(productRow.dataset.stock) + item.quantity;
+        
+        if (newQuantity < 1 || newQuantity > currentStock) {
+            alert('Invalid quantity');
+            return;
+        }
+        
+        const stockDiff = item.quantity - newQuantity;
+        item.quantity = newQuantity;
+        
+        // Update stock display
+        const newStock = parseInt(productRow.dataset.stock) + stockDiff;
+        productRow.dataset.stock = newStock;
+        const badge = productRow.querySelector('td:nth-child(4) .badge'); // Fixed: was 3, should be 4
+        badge.textContent = newStock;
+        
+        if (newStock === 0) {
+            badge.classList.remove('badge-success', 'badge-warning');
+            badge.classList.add('badge-danger');
+            productRow.querySelector('.add-to-cart').disabled = true;
+        } else if (newStock < 10) {
+            badge.classList.remove('badge-success', 'badge-danger');
+            badge.classList.add('badge-warning');
+        } else {
+            badge.classList.remove('badge-warning', 'badge-danger');
+            badge.classList.add('badge-success');
+        }
+        
+        updateCartItems();
+    };
+    
+    window.removeItem = function(index) {
+        const item = cartItems[index];
+        const productRow = document.querySelector(`#products-table tr[data-id="${item.id}"]`);
+        
+        // Update stock display
+        const newStock = parseInt(productRow.dataset.stock) + item.quantity;
+        productRow.dataset.stock = newStock;
+        const badge = productRow.querySelector('td:nth-child(4) .badge'); // Fixed: was 3, should be 4
+        badge.textContent = newStock;
+        
+        if (newStock > 0) {
+            badge.classList.remove('badge-danger');
+            if (newStock < 10) {
+                badge.classList.add('badge-warning');
+            } else {
+                badge.classList.add('badge-success');
+            }
+            productRow.querySelector('.add-to-cart').disabled = false;
+        }
+        
+        cartItems.splice(index, 1);
+        updateCartItems();
+    };
+
+    // Process order confirmation
+    document.getElementById('process-order').addEventListener('click', function() {
+        const { grandTotal, change } = calculateFinancials();
+        const cashTendered = parseFloat(cashTenderedElement.value) || 0;
+        
+        if (cashTendered < grandTotal) {
+            alert('Insufficient cash tendered');
+            return;
+        }
+        
+        // Update modal values
+        document.getElementById('modal-total').textContent = grandTotal.toFixed(2);
+        document.getElementById('modal-cash').textContent = cashTendered.toFixed(2);
+        document.getElementById('modal-change').textContent = change.toFixed(2);
+        
+        // Show modal
+        const modal = new bootstrap.Modal(document.getElementById('confirmModal'));
+        modal.show();
+    });
+    
+    // Confirm order processing
+    document.getElementById('confirm-process').addEventListener('click', function() {
+        document.getElementById('cart-data').value = JSON.stringify(cartItems);
+        document.getElementById('order-form').submit();
+    });
+    
+    // Event listeners for financial updates
+    discountElement.addEventListener('change', updateFinancialDisplay);
+    cashTenderedElement.addEventListener('input', updateFinancialDisplay);
+    
+    // Initialize transaction number
+    const transactionNo = generateTransactionNumber();
+    transactionIdDisplay.textContent = transactionNo;
+    transactionIdInput.value = transactionNo;
+    
+    // Initialize empty cart display
+    updateCartItems();
+
+    // Print Receipt Button in Modal Click Handler
+    document.getElementById('print-receipt-btn').addEventListener('click', function() {
+        // Create a print-friendly version
+        const printContent = `
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <title>Receipt</title>
+                <style>
+                    body { font-family: Arial, sans-serif; font-size: 12px; padding: 10px; }
+                    .receipt { width: 100%; max-width: 300px; margin: 0 auto; }
+                    .text-center { text-align: center; }
+                    .text-end { text-align: right; }
+                    table { width: 100%; border-collapse: collapse; margin: 5px 0; }
+                    th, td { padding: 3px 0; }
+                    hr { border-top: 1px dashed #000; margin: 5px 0; }
+                    .fw-bold { font-weight: bold; }
+                </style>
+            </head>
+            <body>
+                ${document.getElementById('receipt-content').innerHTML}
+                <script>
+                    window.onload = function() {
+                        window.print();
+                        setTimeout(function() {
+                            window.close();
+                        }, 100);
+                    };
+                <\/script>
+            </body>
+            </html>
+        `;
+        const printWindow = window.open('', '_blank', 'width=600,height=600');
+        printWindow.document.open();
+        printWindow.document.write(printContent);
+        printWindow.document.close();
+    });
+});
+
+// Print Receipt Button Click Handler (move this outside DOMContentLoaded and use cartItems)
+document.getElementById('print-receipt').addEventListener('click', function() {
+    const receiptItems = document.getElementById('receipt-items');
+    receiptItems.innerHTML = '';
+    if (cartItems.length > 0) {
+        cartItems.forEach((item, index) => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${item.name}</td>
+                <td class="text-end">${item.quantity}</td>
+                <td class="text-end">₱${item.unitPrice.toFixed(2)}</td>
+                <td class="text-end">₱${(item.quantity * item.unitPrice).toFixed(2)}</td>
+            `;
+            receiptItems.appendChild(row);
+        });
+    } else {
+        // If cart is empty, show the same empty state as order-form
+        receiptItems.innerHTML = `
+            <tr>
+                <td colspan="4" class="text-center py-4 text-muted">
+                    <i class="bi bi-cart-x fs-1"></i>
+                    <p class="mt-2">No items in cart</p>
+                </td>
+            </tr>
+        `;
+    }
+    // Update receipt totals with the same formatting as order-form
+    document.getElementById('receipt-transaction-no').textContent = document.getElementById('transaction-id-display').textContent;
+    document.getElementById('receipt-subtotal').textContent = document.getElementById('subtotal').textContent;
+    document.getElementById('receipt-discount').textContent = document.getElementById('discount-amount').textContent;
+    document.getElementById('receipt-vat').textContent = document.getElementById('vat-amount').textContent;
+    document.getElementById('receipt-total').textContent = document.getElementById('grand-total').textContent;
+    document.getElementById('receipt-cash').textContent = document.getElementById('cashTendered').value || '0.00';
+    document.getElementById('receipt-change').textContent = document.getElementById('change').value || '0.00';
+    // Show receipt modal
+    new bootstrap.Modal(document.getElementById('receiptModal')).show();
+});
+</script>
 
     <?php include '../includes/footer.php'; ?>
 
@@ -650,7 +1017,8 @@
                             </button>
                             <input type="number" value="${item.quantity}" min="1" max="${item.maxQuantity}" 
                                    class="form-control text-center mx-1" 
-                                   onchange="updateQuantity(${index}, this.value)">
+                                   onchange="updateQuantity(${index}, this.value)" 
+                                   style="padding-right: 0.5rem; width: 60px;">
                             <button class="btn btn-outline-secondary" type="button" onclick="increaseQuantity(${index})">
                                 <i class="bi bi-plus"></i>
                             </button>
@@ -708,7 +1076,7 @@
                 // Update stock display
                 const newStock = stock - 1;
                 row.dataset.stock = newStock;
-                const badge = row.querySelector('td:nth-child(3) .badge');
+                const badge = row.querySelector('td:nth-child(4) .badge'); // Fixed: was 3, should be 4
                 badge.textContent = newStock;
                 
                 if (newStock === 0) {
@@ -734,7 +1102,7 @@
                 const productRow = document.querySelector(`#products-table tr[data-id="${item.id}"]`);
                 const newStock = parseInt(productRow.dataset.stock) - 1;
                 productRow.dataset.stock = newStock;
-                const badge = productRow.querySelector('td:nth-child(3) .badge');
+                const badge = productRow.querySelector('td:nth-child(4) .badge'); // Fixed: was 3, should be 4
                 badge.textContent = newStock;
                 
                 if (newStock === 0) {
@@ -761,7 +1129,7 @@
                 const productRow = document.querySelector(`#products-table tr[data-id="${item.id}"]`);
                 const newStock = parseInt(productRow.dataset.stock) + 1;
                 productRow.dataset.stock = newStock;
-                const badge = productRow.querySelector('td:nth-child(3) .badge');
+                const badge = productRow.querySelector('td:nth-child(4) .badge'); // Fixed: was 3, should be 4
                 badge.textContent = newStock;
                 
                 if (newStock > 0) {
@@ -797,7 +1165,7 @@
             // Update stock display
             const newStock = parseInt(productRow.dataset.stock) + stockDiff;
             productRow.dataset.stock = newStock;
-            const badge = productRow.querySelector('td:nth-child(3) .badge');
+            const badge = productRow.querySelector('td:nth-child(4) .badge'); // Fixed: was 3, should be 4
             badge.textContent = newStock;
             
             if (newStock === 0) {
@@ -822,7 +1190,7 @@
             // Update stock display
             const newStock = parseInt(productRow.dataset.stock) + item.quantity;
             productRow.dataset.stock = newStock;
-            const badge = productRow.querySelector('td:nth-child(3) .badge');
+            const badge = productRow.querySelector('td:nth-child(4) .badge'); // Fixed: was 3, should be 4
             badge.textContent = newStock;
             
             if (newStock > 0) {
@@ -882,27 +1250,12 @@
 </html>
 
         <style>
-            .custom-table {
-                border-collapse: collapse;
-                width: 100%;
-            }
-
-            .custom-table th,
-            .custom-table td {
-                border: 1px solid #dee2e6 !important;
-                padding: 10px;
-                text-align: center;
-            }
-
-            .custom-table thead th {
-                background-color: rgb(168, 168, 168);
-                color: white;
-            }
-
-            .custom-table tbody tr:hover {
-                background-color: #f8f9fa;
-            }
-
+            /* Add this to your existing styles */
+#no-products-message {
+    margin-top: 10px;
+    margin-bottom: 10px;
+    border-radius: 8px;
+}
             .btn {
                 display: inline-flex;
                 align-items: center;
@@ -959,6 +1312,24 @@
                 background-color: #565e64;
                 border-color: #4e555b;
             }
+
+            /* Add this to your existing styles */
+#product-search {
+    max-width: 300px;
+
+}
+
+.input-group-text {
+    background-color: var(--primary);
+    color: white;
+    border-color: var(--primary);
+}
+
+#product-search:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 0.25rem rgba(67, 97, 238, 0.25);
+}
         </style>
+
     </section>
 </main>

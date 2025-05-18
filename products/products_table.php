@@ -109,18 +109,17 @@ include '../includes/footer.php';
 
                             <!-- Product Table -->
                             <div class="table-responsive">
-                                <table id="myTable" class="custom-table table table-bordered table-hover table-striped">
-                                    <thead class="table-dark">
+                                <table id="myTable" class="table table-hover">
+                                    <thead>
                                         <tr>
-                                            <th class="text-center">Branch</th>
-                                            <th class="text-center">Item</th>
-                                            <th class="text-center">Generic</th>
-                                            <th class="text-center">Preparation</th>
-                                            <th class="text-center">Category</th>
-                                            <th class="text-center">Price</th>
-                                            <th class="text-center">Stock</th>
-                                            <th class="text-center">Vatable</th>
-                                            <th class="text-center">Action</th>
+                                            <th>Branch</th>
+                                            <th>Item</th>
+                                            <th>Generic</th>
+                                            <th>Category</th>
+                                            <th>Price</th>
+                                            <th>Stock</th>
+                                            <th>Vatable</th>
+                                            <th>Action</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -193,24 +192,40 @@ include '../includes/footer.php';
 </script>
 
 <style>
-    .custom-table {
-        border-collapse: collapse;
-        width: 100%;
+    #myTable {
+        --bs-table-bg: transparent;
+        --bs-table-striped-bg: rgba(0,0,0,0.02);
+        --bs-table-hover-bg: rgba(0,0,0,0.04);
+        border-collapse: separate;
+        border-spacing: 0;
+        font-size: 0.9rem;
     }
-
-    .custom-table th,
-    .custom-table td {
-        border: 1px solid #dee2e6 !important;
-        padding: 10px;
+    #myTable th {
+        font-weight: 500;
+        background-color: #f8f9fa;
+        border-bottom: 2px solid #dee2e6;
+        padding: 0.75rem 1rem;
+        white-space: nowrap;
         text-align: center;
     }
-
-    .custom-table thead th {
-        background-color: rgb(168, 168, 168);
-        color: white;
+    #myTable td {
+        padding: 0.75rem 1rem;
+        border-bottom: 1px solid #dee2e6;
+        vertical-align: middle;
+        text-align: center;
     }
-
-    .custom-table tbody tr:hover {
-        background-color: #f8f9fa;
+    #myTable tr:last-child td {
+        border-bottom: none;
+    }
+    .btn-group-sm .btn {
+        padding: 0.25rem 0.5rem;
+    }
+    @media (max-width: 768px) {
+        #myTable {
+            font-size: 0.85rem;
+        }
+        #myTable th, #myTable td {
+            padding: 0.5rem;
+        }
     }
 </style>

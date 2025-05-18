@@ -65,11 +65,15 @@ include '../includes/footer.php';
                             <h3 class="mb-0">Add Product</h3>
                         </div>
                         <div class="card-body">
-                            <form method="POST" action="add_products.php">
+                            <form method="POST" action="add_products.php" id="addProductForm">
                                 <div class="row">
                                     <div class="col-md-6 mb-3">
                                         <label for="product_name" class="form-label">Product Name <span class="text-danger">*</span></label>
                                         <input type="text" class="form-control" id="product_name" name="product_name" required>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="generic_name" class="form-label">Generic Name</label>
+                                        <input type="text" class="form-control" id="generic_name" name="generic_name">
                                     </div>
                                     <div class="col-md-6 mb-3">
                                         <label for="category" class="form-label">Category <span class="text-danger">*</span></label>
@@ -79,32 +83,37 @@ include '../includes/footer.php';
                                             $category_sql = "SELECT * FROM categories";
                                             $category_result = $con->query($category_sql);
                                             while ($category = $category_result->fetch_assoc()) {
-                                                echo "<option value='{$category['id']}'>{$category['category_name']}</option>";
+                                                echo "<option value='{$category['id']}' data-name='{$category['category_name']}'>{$category['category_name']}</option>";
                                             }
                                             ?>
                                         </select>
                                     </div>
-                                    <div class="col-md-6 mb-3">
-                                        <label for="dosage_form_id" class="form-label">Preperation</label>
+                                    <!-- Medicine Fields -->
+                                    <div class="col-md-6 mb-3 medicine-fields d-none">
+                                        <label for="dosage_form_id" class="form-label">Preparation</label>
                                         <select class="form-control" id="dosage_form_id" name="dosage_form_id">
-                                            <option value="">Select Preperation</option>
+                                            <option value="">Select Preparation</option>
                                             <?php
                                             $dosage_sql = "SELECT * FROM dosage_forms";
                                             $dosage_result = $con->query($dosage_sql);
-                                            $dosage = null;
                                             while ($dosage = $dosage_result->fetch_assoc()) {
                                                 echo "<option value='{$dosage['id']}'>{$dosage['form_name']}</option>";
                                             }
                                             ?>
                                         </select>
                                     </div>
-                                    <div class="col-md-6 mb-3">
-                                        <label for="strength" class="form-label">Dosage</label>
+                                    <div class="col-md-6 mb-3 medicine-fields d-none">
+                                        <label for="strength" class="form-label">Dosage/Strength</label>
                                         <input type="text" class="form-control" id="strength" name="strength">
                                     </div>
-                                    <div class="col-md-6 mb-3">
-                                        <label for="generic_name" class="form-label">Generic Name</label>
-                                        <input type="text" class="form-control" id="generic_name" name="generic_name">
+                                    <!-- Supplies Fields -->
+                                    <div class="col-md-6 mb-3 supplies-fields d-none">
+                                        <label for="manufacturer" class="form-label">Manufacturer</label>
+                                        <input type="text" class="form-control" id="manufacturer" name="manufacturer">
+                                    </div>
+                                    <div class="col-md-6 mb-3 supplies-fields d-none">
+                                        <label for="warranty" class="form-label">Warranty</label>
+                                        <input type="text" class="form-control" id="warranty" name="warranty">
                                     </div>
                                     <div class="col-md-6 mb-3">
                                         <label for="vatable" class="form-label">Vatable <span class="text-danger">*</span></label>
@@ -117,6 +126,33 @@ include '../includes/footer.php';
                                 <button type="submit" class="btn btn-success">Add Product</button>
                                 <a href="products_table.php" class="btn btn-danger">Cancel</a>
                             </form>
+
+                            <script>
+                            document.addEventListener('DOMContentLoaded', function () {
+                                const categorySelect = document.getElementById('category');
+                                const medicineFields = document.querySelectorAll('.medicine-fields');
+                                const suppliesFields = document.querySelectorAll('.supplies-fields');
+
+                                function toggleFields() {
+                                    let selectedOption = categorySelect.options[categorySelect.selectedIndex];
+                                    let categoryName = selectedOption.getAttribute('data-name') || '';
+
+                                    // Hide all conditional fields by default
+                                    medicineFields.forEach(el => el.classList.add('d-none'));
+                                    suppliesFields.forEach(el => el.classList.add('d-none'));
+
+                                    if (categoryName.toLowerCase() === 'supplies') {
+                                        suppliesFields.forEach(el => el.classList.remove('d-none'));
+                                    } else if (categoryName) {
+                                        // Show medicine fields for other categories
+                                        medicineFields.forEach(el => el.classList.remove('d-none'));
+                                    }
+                                }
+
+                                categorySelect.addEventListener('change', toggleFields);
+                                toggleFields(); // Initial call in case of pre-selected value
+                            });
+                            </script>
                         </div>
                     </div>
                 </div>
